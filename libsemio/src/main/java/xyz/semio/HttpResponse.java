@@ -22,4 +22,9 @@ public class HttpResponse {
   public JSONObject getData() {
     return this._data;
   }
+
+  @Override
+  public String toString() {
+    return this._code + (this._data != null ? " " + this._data.toString() : "");
+  }
 }

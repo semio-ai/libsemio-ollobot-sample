@@ -1,13 +1,10 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion "24.0.0"
+    compileSdkVersion 23
+    buildToolsVersion "23.0.3"
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    testCompile "com.crittercism.dexmaker:dexmaker:1.4"
-    testCompile "com.crittercism.dexmaker:dexmaker-dx:1.4"
-    testCompile "com.crittercism.dexmaker:dexmaker-mockito:1.4"
+    compile fileTree(include: ['*.jar'], dir: 'libs')
 }

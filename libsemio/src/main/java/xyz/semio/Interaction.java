@@ -44,7 +44,7 @@ public class Interaction {
         int next = 0;
         try {
           utterance = res.getString("utterance");
-          script = res.getString("script");
+          script = res.has("script") ? res.getString("script") : "";
           next = res.getInt("next");
         } catch(final JSONException e) {
           Log.e(Util.TAG, e.getMessage());

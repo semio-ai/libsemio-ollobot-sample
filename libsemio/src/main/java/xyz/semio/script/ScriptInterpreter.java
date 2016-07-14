@@ -578,6 +578,9 @@ public class ScriptInterpreter {
     } else if(first.getType() == Token.Type.LOGICAL_NOT) {
       ret.appendChild(expr(tokens, PRECEDENCE.get(Token.Type.LOGICAL_NOT)));
       ret.appendChild(new Node(Node.Type.UNARY_OPERATOR, first));
+    } else if(first.getType() == Token.Type.SUB) {
+      ret.appendChild(expr(tokens, PRECEDENCE.get(Token.Type.SUB)));
+      ret.appendChild(new Node(Node.Type.UNARY_OPERATOR, first));
     } else if(first.getType() == Token.Type.REAL
       || first.getType() == Token.Type.INTEGER
       || first.getType() == Token.Type.STRING
@@ -1112,6 +1115,12 @@ public class ScriptInterpreter {
         Instance rhs = stack.pop();
         if(op == Token.Type.LOGICAL_NOT) {
           return new Instance(Instance.Type.BOOLEAN, !rhs.getBooleanValue());
+        }
+        if(op == Token.Type.SUB && rhs.getType() == Instance.Type.INTEGER) {
+          return new Instance(Instance.Type.INTEGER, -rhs.getIntegerValue());
+        }
+        if(op == Token.Type.SUB && rhs.getType() == Instance.Type.REAL) {
+          return new Instance(Instance.Type.REAL, -rhs.getRealValue());
         }
         return null;
       }

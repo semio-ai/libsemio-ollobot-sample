@@ -2,8 +2,10 @@ package xyz.semio;
 
 import android.util.Log;
 
-import xyz.semio.script.Android;
+import xyz.semio.ollobot.Ollobot;
+import xyz.semio.script.Debug;
 import xyz.semio.script.ScriptInterpreter;
+import xyz.semio.script.Time;
 
 public class InteractionPlayer {
   private Interaction _interaction;
@@ -15,7 +17,8 @@ public class InteractionPlayer {
   public InteractionPlayer(final Interaction interaction, final PlayStrategy strategy) {
     this._interaction = interaction;
     this._strategy = strategy;
-    this._scriptInterpreter.addBinding(new Android(), "android");
+    this._scriptInterpreter.addBinding(new Debug(), "debug");
+    this._scriptInterpreter.addBinding(new Time(), "time");
   }
 
   public Interaction getInteraction() {
@@ -24,7 +27,7 @@ public class InteractionPlayer {
   public PlayStrategy getStrategy() {
     return this._strategy;
   }
-  public ScriptInterpreter scriptInterpreter() {
+  public ScriptInterpreter getScriptInterpreter() {
     return this._scriptInterpreter;
   }
 
@@ -32,11 +35,20 @@ public class InteractionPlayer {
     @Override
     public Object apply(InteractionState value) {
       if(!_playing) return null;
-      try {
-        _scriptInterpreter.execute(value.getScript());
-      } catch(Throwable t) {
-        Log.e("script execution", t.getMessage());
-      }
+
+      final String script = value.getScript();
+
+      Thread t = new Thread(new Runnable() {
+        @Override
+        public void run() {
+          try {
+            _scriptInterpreter.execute(script);
+          } catch(final Throwable t) {
+            t.printStackTrace();
+          }
+        }
+      });
+      t.run();
       _strategy.emit(value).then(new Function<Void, Object>() {
         @Override
         public Object apply(Void value) {

@@ -12,12 +12,13 @@ import java.util.Locale;
 import java.util.Map;
 
 public class SpeechHelper implements TextToSpeech.OnInitListener {
-  private static final int RESULT_SPEECH = 1337;
+  private static final int RESULT_SPEECH = 1300;
   private static final String SPEECH_PROMISE = "SPEECH_PROMISE";
 
   private TextToSpeech _tts = null;
 
   private int _speechPromiseIter = 1;
+  private int _speechResultIter = 0;
   private Map<Integer, Promise<String>> _recPromiseMap = new HashMap<Integer, Promise<String>>();
   private Map<String, Promise<SpeechStatus>> _ttsPromiseMap = new HashMap<String, Promise<SpeechStatus>>();
 
@@ -31,11 +32,12 @@ public class SpeechHelper implements TextToSpeech.OnInitListener {
   private class ProgressListener extends UtteranceProgressListener {
     @Override
     public void onStart(String id) {
-
+      System.out.println(id);
     }
 
     @Override
     public void onDone(String id) {
+      System.out.println(id);
       if(!id.startsWith("SEMIO-")) return;
       _ttsPromiseMap.get(id).complete(SpeechStatus.Done);
       _ttsPromiseMap.remove(id);
@@ -43,6 +45,7 @@ public class SpeechHelper implements TextToSpeech.OnInitListener {
 
     @Override
     public void onError(String id) {
+      System.out.println(id);
       if(!id.startsWith("SEMIO-")) return;
       _ttsPromiseMap.get(id).complete(SpeechStatus.Error);
       _ttsPromiseMap.remove(id);
@@ -56,16 +59,22 @@ public class SpeechHelper implements TextToSpeech.OnInitListener {
   private void lazyInit() {
     if(this._tts != null) return;
     this._tts = new TextToSpeech(this._activity, this);
+    this._tts.setOnUtteranceProgressListener(new ProgressListener());
+  }
+
+  private int nextSpeechResultIter() {
+    int next = this._speechResultIter++;
+    this._speechResultIter %= 100;
+    return next + RESULT_SPEECH;
   }
 
   public Promise<String> recognize() {
     Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
     intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, "en-US");
-    int speechPromiseIt = _speechPromiseIter++;
+    int speechIt = this.nextSpeechResultIter();
     Promise<String> ret = new Promise<String>();
-    this._recPromiseMap.put(speechPromiseIt, ret);
-    intent.putExtra(SPEECH_PROMISE, speechPromiseIt);
-    this._activity.startActivityForResult(intent, RESULT_SPEECH);
+    this._recPromiseMap.put(speechIt, ret);
+    this._activity.startActivityForResult(intent, speechIt);
     return ret;
   }
 
@@ -84,14 +93,12 @@ public class SpeechHelper implements TextToSpeech.OnInitListener {
   }
 
   public void processResult(int requestCode, int resultCode, Intent data) {
-    if(requestCode != RESULT_SPEECH) return;
+    if(requestCode <  RESULT_SPEECH || requestCode >= RESULT_SPEECH + 100) return;
     if (resultCode != Activity.RESULT_OK || data == null) return;
 
     ArrayList<String> text = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-    int iter = data.getIntExtra(SPEECH_PROMISE, -1);
-    if(iter < 0) return;
-
-    this._recPromiseMap.get(iter).complete(text.get(0));
-    this._recPromiseMap.remove(iter);
+    System.out.println(text.get(0));
+    this._recPromiseMap.get(requestCode).complete(text.get(0));
+    this._recPromiseMap.remove(requestCode);
   }
 }
