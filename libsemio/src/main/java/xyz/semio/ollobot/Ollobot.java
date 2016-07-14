@@ -13,7 +13,6 @@ public class Ollobot {
   }
 
   public void stop() {
-    System.out.println("STOP!");
     this.setBlueLed(false);
     this.setGreenLed(false);
     this.setMotorVelocity(1, 0);

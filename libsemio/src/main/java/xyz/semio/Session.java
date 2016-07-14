@@ -7,6 +7,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Session {
+
+  /**
+   * Creates a new stateful Interaction based on a given Graph ID.
+   *
+   * @param graphId The 36 character unique identifier of the dialog graph
+   * @return A deferred Interaction instance or null if the interaction couldn't be created
+   */
   public Promise<Interaction> createInteraction(final String graphId) {
     Promise<Interaction> ret = new Promise<Interaction>();
     JSONObject data = new JSONObject();

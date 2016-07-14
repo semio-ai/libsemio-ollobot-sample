@@ -10,7 +10,14 @@ import java.net.CookieManager;
 import java.net.PasswordAuthentication;
 
 public class Semio {
-  public static Promise<Session> createSession(final String username, final String password) throws SessionException {
+  /**
+   * Creates a session with Semio's servers based on your account login information.
+   *
+   * @param username Your username
+   * @param password Your password
+   * @return A deferred Session with Semio's servers or null if a session couldn't be established
+   */
+  public static Promise<Session> createSession(final String username, final String password) {
     // FIXME: Shouldn't be the global one
     final String auth = Base64.encodeToString((username + ":" + Util.shaHex(password)).getBytes(), Base64.NO_WRAP);
     System.out.println(auth);

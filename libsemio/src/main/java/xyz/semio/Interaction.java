@@ -18,6 +18,12 @@ public class Interaction {
     return this._id;
   }
 
+  /**
+   * Advances the interaction from a user's given utterance.
+   *
+   * @param input The user's utterance (from either a text box or speech-to-text, for example)
+   * @return A deferred InteractionState or null in the case of failure
+   */
   public Promise<InteractionState> next(final String input) {
     Promise<InteractionState> ret = new Promise<InteractionState>();
 

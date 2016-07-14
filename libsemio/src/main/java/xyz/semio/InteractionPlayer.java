@@ -7,6 +7,9 @@ import xyz.semio.script.Debug;
 import xyz.semio.script.ScriptInterpreter;
 import xyz.semio.script.Time;
 
+/**
+ * This convenience class enables asynchronous playback of Interactions with a given PlayStrategy
+ */
 public class InteractionPlayer {
   private Interaction _interaction;
   private PlayStrategy _strategy;
@@ -14,6 +17,12 @@ public class InteractionPlayer {
 
   private boolean _playing = false;
 
+  /**
+   * Creates a new InteractionPlayer.
+   *
+   * @param interaction The Interaction to play
+   * @param strategy The method for emitting and recognizing input
+   */
   public InteractionPlayer(final Interaction interaction, final PlayStrategy strategy) {
     this._interaction = interaction;
     this._strategy = strategy;
@@ -75,12 +84,18 @@ public class InteractionPlayer {
     _strategy.recognize().then(_recPhase);
   }
 
+  /**
+   * Starts the interaction
+   */
   public void start() {
     if(this._playing) return;
     this._playing = true;
     this._recognize();
   }
 
+  /**
+   * Schedules the Interaction to be stopped
+   */
   public void stop() {
     if(!this._playing) return;
     this._playing = false;

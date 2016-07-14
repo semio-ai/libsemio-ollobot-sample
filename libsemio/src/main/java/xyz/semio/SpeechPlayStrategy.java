@@ -2,6 +2,9 @@ package xyz.semio;
 
 import android.app.Activity;
 
+/**
+ * Uses a SpeechHelper to emit and recognize speech
+ */
 public class SpeechPlayStrategy implements PlayStrategy {
   private SpeechHelper _speech;
 
