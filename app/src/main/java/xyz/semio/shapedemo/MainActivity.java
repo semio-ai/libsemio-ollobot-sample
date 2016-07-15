@@ -16,7 +16,6 @@ import xyz.semio.Interaction;
 import xyz.semio.InteractionPlayer;
 import xyz.semio.Semio;
 import xyz.semio.Session;
-import xyz.semio.SessionException;
 import xyz.semio.SpeechHelper;
 import xyz.semio.SpeechPlayStrategy;
 import xyz.semio.ollobot.Ollobot;
@@ -72,12 +71,6 @@ public class MainActivity extends Activity {
         case Constants.MESSAGE_BT_STATE_CONNECTING:
           break;
         case Constants.MESSAGE_BT_STATE_CONNECTED:
-          if(_service != null) {
-            String deviceName = _service.getDeviceName();
-            if(deviceName != null) {
-
-            }
-          }
           break;
         case Constants.MESSAGE_BT_STATE_ERROR:
           break;
@@ -99,28 +92,22 @@ public class MainActivity extends Activity {
   private ServiceConnection _serviceConn = new ServiceConnection() {
 
     public void onServiceConnected(ComponentName className, IBinder binder) {
-      Log.d(TAG, "# Activity - Service connected");
-
       _service = ((BTConnectionService.ServiceBinder) binder).getService();
       _ollobot = new Ollobot(_service);
 
-      // Activity couldn't work with mService until connections are made
-      // So initialize parameters and settings here. Do not initialize while running onCreate()
       initialize();
     }
 
     public void onServiceDisconnected(ComponentName className) {
-      Log.d(TAG, "# Activity - Service disconnected");
       _service = null;
       _ollobot = null;
     }
   };
 
+  // Enable bluetooth and register bluetooth handler
   private void initialize() {
     _service.setupService(_activityHandler);
 
-    // If BT is not on, request that it be enabled.
-    // RetroWatchService.setupBT() will then be called during onActivityResult
     if(_service.isBluetoothEnabled()) return;
 
     Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -144,7 +131,6 @@ public class MainActivity extends Activity {
       @Override
       public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         String graphId = _graphInfos.get(position).getId();
-        System.out.println("ID " + graphId);
         startInteraction(graphId);
       }
     });
@@ -159,6 +145,7 @@ public class MainActivity extends Activity {
     this._submit.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
+        // Try to login
         Semio.createSession(_username.getText().toString(), _password.getText().toString()).then(new Function<Session, Object>() {
           @Override
           public Object apply(Session session) {
@@ -176,6 +163,7 @@ public class MainActivity extends Activity {
             }
 
             _session = session;
+            // If we successfully logged in, fetch the chatbots associated with this account
             populateGraphs();
             return null;
           }
@@ -185,9 +173,10 @@ public class MainActivity extends Activity {
 
 
     startService();
-    _speech.say("");
+    _speech.init();
   }
 
+  // Fetch the chatbots associated with a Semio account
   private void populateGraphs() {
     if(this._session == null) return;
     this._session.getGraphs().then(new Function<List<GraphInfo>, Object>() {
@@ -209,6 +198,7 @@ public class MainActivity extends Activity {
     });
   }
 
+  // Play an interaction
   private void startInteraction(final String id) {
     _session.createInteraction(id).then(new Function<Interaction, Object>() {
       @Override
@@ -222,7 +212,6 @@ public class MainActivity extends Activity {
   }
 
   private void startService() {
-    Log.i(TAG, "startService");
     startService(new Intent(this, BTConnectionService.class));
     bindService(new Intent(this, BTConnectionService.class), _serviceConn, Context.BIND_AUTO_CREATE);
     _serviceBound = true;

@@ -24,7 +24,7 @@ public class Ollobot {
         OLLOBOT.Address.PORT_1_MOTOR_SPEED,
         137
     };
-    velocity = (int)((double)velocity / 127.0 * 100.0);
+    velocity = (int)((double)velocity / 100.0 * 127.0);
     byte[] packet = Dynamixel.packetWriteWord(OLLOBOT.ID, ports[port - 1], velocity);
     this._service.sendMessageToRemote(packet);
   }

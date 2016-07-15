@@ -82,6 +82,10 @@ public class SpeechHelper implements TextToSpeech.OnInitListener {
 
   }
 
+  public void init() {
+    this.lazyInit();
+  }
+
   public Promise<SpeechStatus> say(final String utterance) {
     this.lazyInit();
     this._tts.setLanguage(Locale.US);

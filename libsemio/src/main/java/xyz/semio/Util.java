@@ -8,7 +8,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 class Util {
-  public static String API_BASE = "http://10.0.1.4/v1";
+  public static String API_BASE = "https://www.semio.xyz/v1";
   public static String TAG = "libsemio";
 
   public static URL makeApiUrl(final String extension) {

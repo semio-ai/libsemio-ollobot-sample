@@ -58,12 +58,12 @@ public class HttpRequest {
   }
 
   private HttpResponse fetchResult(int reentryCount) {
-    HttpURLConnection conn = null;
+    HttpsURLConnection conn = null;
     int code = 0;
     JSONObject data = null;
     JSONArray arr = null;
     try {
-      conn = (HttpURLConnection)_url.openConnection();
+      conn = (HttpsURLConnection)_url.openConnection();
 
       conn.setReadTimeout(10000);
       conn.setConnectTimeout(15000);
