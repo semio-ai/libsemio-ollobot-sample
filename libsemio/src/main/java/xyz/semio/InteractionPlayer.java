@@ -47,6 +47,7 @@ public class InteractionPlayer {
 
       final String script = value.getScript();
 
+      Promise<Void> em = _strategy.emit(value);
       Thread t = new Thread(new Runnable() {
         @Override
         public void run() {
@@ -58,7 +59,7 @@ public class InteractionPlayer {
         }
       });
       t.run();
-      _strategy.emit(value).then(new Function<Void, Object>() {
+      em.then(new Function<Void, Object>() {
         @Override
         public Object apply(Void value) {
           if(!_playing) return null;

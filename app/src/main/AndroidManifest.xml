@@ -25,6 +25,13 @@
                   android:configChanges="keyboardHidden|orientation|screenSize" >
         </activity>
 
+        <service
+            android:name= "xyz.semio.ollobot.service.BTConnectionService"
+            android:icon="@drawable/ic_launcher"
+            android:label= "@string/service_name"
+            android:configChanges="keyboardHidden|orientation|screenSize" >
+        </service>
+
     </application>
 
     <uses-permission android:name="android.permission.INTERNET"></uses-permission>

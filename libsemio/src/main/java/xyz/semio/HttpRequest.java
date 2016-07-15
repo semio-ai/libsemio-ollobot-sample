@@ -5,6 +5,7 @@ import android.renderscript.ScriptGroup;
 import android.util.JsonWriter;
 import android.util.Log;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -60,6 +61,7 @@ public class HttpRequest {
     HttpURLConnection conn = null;
     int code = 0;
     JSONObject data = null;
+    JSONArray arr = null;
     try {
       conn = (HttpURLConnection)_url.openConnection();
 
@@ -100,7 +102,16 @@ public class HttpRequest {
       final String dataString = streamToString(in);
       System.out.println("RET " + dataString);
       if(dataString.length() > 0 && !dataString.equalsIgnoreCase("OK")) {
-        data = new JSONObject(dataString);
+        try {
+          data = new JSONObject(dataString);
+        } catch(final JSONException e) {
+          try {
+            arr = new JSONArray(dataString);
+          } catch(final JSONException e1) {
+
+          }
+        }
+
       }
     } catch (final EOFException e) {
       if(conn != null) conn.disconnect();
@@ -111,14 +122,11 @@ public class HttpRequest {
       Log.e(Util.TAG, e.toString() + " (code: " + code + ")");
       e.printStackTrace();
       return null;
-    } catch(final JSONException e) {
-      e.printStackTrace();
-      return null;
     } finally {
       if(conn != null) conn.disconnect();
     }
 
-    return new HttpResponse(code, data);
+    return new HttpResponse(code, data, arr);
   }
 
   Promise<HttpResponse> execute() {

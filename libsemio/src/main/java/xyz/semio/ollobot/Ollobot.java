@@ -24,16 +24,22 @@ public class Ollobot {
         OLLOBOT.Address.PORT_1_MOTOR_SPEED,
         137
     };
+    velocity = (int)((double)velocity / 127.0 * 100.0);
     byte[] packet = Dynamixel.packetWriteWord(OLLOBOT.ID, ports[port - 1], velocity);
     this._service.sendMessageToRemote(packet);
   }
 
   public void setLeftMotorVelocity(int velocity) {
-    this.setMotorVelocity(1, velocity);
+    this.setMotorVelocity(1, -velocity);
   }
 
   public void setRightMotorVelocity(int velocity) {
     this.setMotorVelocity(2, velocity);
+  }
+
+  public void drive(int leftVel, int rightVel) {
+    this.setLeftMotorVelocity(leftVel);
+    this.setRightMotorVelocity(rightVel);
   }
 
   public void setBlueLed(boolean state) {

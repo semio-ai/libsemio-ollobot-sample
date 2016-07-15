@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import xyz.semio.Function;
+import xyz.semio.GraphInfo;
 import xyz.semio.Interaction;
 import xyz.semio.InteractionPlayer;
 import xyz.semio.Semio;
@@ -29,15 +30,29 @@ import android.app.Activity;
 import android.content.Intent;
 import android.view.Menu;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.EditText;
 import android.widget.Toast;
+
+import java.util.List;
 
 public class MainActivity extends Activity {
   private static final String TAG = "semio";
 
-  private ImageButton btnSpeak;
-  private TextView txtText;
+  private EditText _username;
+  private EditText _password;
+  private Button _submit;
+  private ListView _graphs;
+  private List<GraphInfo> _graphInfos;
+  private Button _selectDevice;
+
+  private Session _session;
+
   private SpeechHelper _speech = new SpeechHelper(this);
 
   private Ollobot _ollobot;
@@ -119,60 +134,95 @@ public class MainActivity extends Activity {
 
     setContentView(R.layout.activity_main);
 
-    txtText = (TextView) findViewById(R.id.txtText);
-    btnSpeak = (ImageButton) findViewById(R.id.btnSpeak);
+    this._username = (EditText) findViewById(R.id.username);
+    this._password = (EditText) findViewById(R.id.password);
+    this._submit = (Button) findViewById(R.id.submit);
+    this._graphs = (ListView) findViewById(R.id.graphs);
+    this._selectDevice = (Button) findViewById(R.id.scan);
 
-    startService();
+    this._graphs.setOnItemClickListener(new ListView.OnItemClickListener() {
+      @Override
+      public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        String graphId = _graphInfos.get(position).getId();
+        System.out.println("ID " + graphId);
+        startInteraction(graphId);
+      }
+    });
 
-    btnSpeak.setOnClickListener(new View.OnClickListener() {
+    this._selectDevice.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
-        _speech.say("Test");
         scan();
       }
     });
 
-    ((ImageButton)findViewById(R.id.move)).setOnClickListener(new View.OnClickListener() {
+    this._submit.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
-        startInteraction();
+        Semio.createSession(_username.getText().toString(), _password.getText().toString()).then(new Function<Session, Object>() {
+          @Override
+          public Object apply(Session session) {
+            if(session == null)
+            {
+              new Handler(MainActivity.this.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                  Toast t = Toast.makeText(MainActivity.this, "Failed to login!", Toast.LENGTH_SHORT);
+                  t.show();
+                }
+              });
+
+              return null;
+            }
+
+            _session = session;
+            populateGraphs();
+            return null;
+          }
+        });
       }
     });
 
+
+    startService();
     _speech.say("");
   }
 
-  private void startInteraction() {
+  private void populateGraphs() {
+    if(this._session == null) return;
+    this._session.getGraphs().then(new Function<List<GraphInfo>, Object>() {
+      @Override
+      public Object apply(List<GraphInfo> graphs) {
+        if(graphs == null) return null;
+        _graphInfos = graphs;
+        final String[] items = new String[graphs.size()];
+        for(int i = 0; i < graphs.size(); ++i) items[i] = graphs.get(i).getName();
+        Handler mainHandler = new Handler(MainActivity.this.getMainLooper());
+        mainHandler.post(new Runnable() {
+          @Override
+          public void run() {
+            _graphs.setAdapter(new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_list_item_1, items));
+          }
+        });
+        return null;
+      }
+    });
+  }
 
-
-    Session session = null;
-    try {
-      Semio.createSession("", "").then(new Function<Session, Object>() {
-        @Override
-        public Object apply(Session session) {
-          if(session == null) return null;
-          System.out.println(session);
-
-          session.createInteraction("e3c9f4b2-ba5c-4151-8f6a-a3a4bfef1841").then(new Function<Interaction, Object>() {
-            @Override
-            public Object apply(Interaction interaction) {
-
-              InteractionPlayer player = new InteractionPlayer(interaction, new SpeechPlayStrategy(_speech));
-              player.getScriptInterpreter().addBinding(new Ollobot(_service), "ollobot");
-              player.start();
-              return null;
-            }
-          });
-
-          return null;
-        }
-      });
-    } catch(final SessionException e) {
-      Log.e("semio", e.toString());
-    }
+  private void startInteraction(final String id) {
+    _session.createInteraction(id).then(new Function<Interaction, Object>() {
+      @Override
+      public Object apply(Interaction interaction) {
+        InteractionPlayer player = new InteractionPlayer(interaction, new SpeechPlayStrategy(_speech));
+        player.getScriptInterpreter().addBinding(new Ollobot(_service), "ollobot");
+        player.start();
+        return null;
+      }
+    });
   }
 
   private void startService() {
+    Log.i(TAG, "startService");
     startService(new Intent(this, BTConnectionService.class));
     bindService(new Intent(this, BTConnectionService.class), _serviceConn, Context.BIND_AUTO_CREATE);
     _serviceBound = true;
@@ -226,7 +276,7 @@ public class MainActivity extends Activity {
 
   @Override
   public void onDestroy() {
-    _ollobot.stop();
+    if(_ollobot != null) _ollobot.stop();
     stopService();
     super.onDestroy();
   }

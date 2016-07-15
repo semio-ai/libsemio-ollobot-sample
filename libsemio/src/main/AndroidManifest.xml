@@ -5,12 +5,7 @@
 
     <uses-sdk android:minSdkVersion="20" android:targetSdkVersion="24" />
 
-    <service
-        android:name= "xyz.semio.ollobot.service.BTConnectionService"
-        android:icon="@drawable/ic_launcher"
-        android:label= "@string/service_name"
-        android:configChanges="keyboardHidden|orientation|screenSize" >
-    </service>
+
 
     <uses-permission android:name="android.permission.INTERNET"></uses-permission>
     <uses-permission android:name="android.permission.BLUETOOTH"></uses-permission>

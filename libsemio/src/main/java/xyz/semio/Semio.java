@@ -32,7 +32,7 @@ public class Semio {
       @Override
       public Session apply(HttpResponse value) {
         if(value == null || value.getCode() != 204) return null;
-        return new Session();
+        return new Session(username);
       }
     });
   }

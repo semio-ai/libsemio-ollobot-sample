@@ -3,10 +3,19 @@ package xyz.semio;
 
 import android.util.Log;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Session {
+  private String _username;
+
+  public Session(final String username) {
+    this._username = username;
+  }
 
   /**
    * Creates a new stateful Interaction based on a given Graph ID.
@@ -41,5 +50,30 @@ public class Session {
       }
     });
 
+  }
+
+  public Promise<List<GraphInfo>> getGraphs() {
+    System.out.println("Getting graphs");
+    HttpRequest req = new HttpRequest(Util.makeApiUrl("account/" + _username + "/graphs"), "GET");
+    return req.execute().then(new Function<HttpResponse, List<GraphInfo>>() {
+      @Override
+      public List<GraphInfo> apply(HttpResponse res) {
+        System.out.println("get " + res);
+        if(res == null) return null;
+
+        System.out.println(res.getArray().toString());
+
+        JSONArray graphs = res.getArray();
+
+        List<GraphInfo> ret = new ArrayList<GraphInfo>();
+        for(int i = 0; i < graphs.length(); ++i) {
+          try {
+            JSONObject graph = graphs.getJSONObject(i);
+            ret.add(new GraphInfo(graph.getString("id"), graph.getString("owner"), graph.getString("name")));
+          } catch(final JSONException e) {}
+        }
+        return ret;
+      }
+    });
   }
 }
