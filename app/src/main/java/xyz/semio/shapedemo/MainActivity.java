@@ -203,6 +203,17 @@ public class MainActivity extends Activity {
     _session.createInteraction(id).then(new Function<Interaction, Object>() {
       @Override
       public Object apply(Interaction interaction) {
+        if(interaction == null) {
+          new Handler(MainActivity.this.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+              Toast t = Toast.makeText(MainActivity.this, "Failed to fetch interaction!", Toast.LENGTH_SHORT);
+              t.show();
+            }
+          });
+
+          return null;
+        }
         InteractionPlayer player = new InteractionPlayer(interaction, new SpeechPlayStrategy(_speech));
         player.getScriptInterpreter().addBinding(new Ollobot(_service), "ollobot");
         player.start();
