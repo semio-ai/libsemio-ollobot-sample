@@ -24,6 +24,8 @@ public class InteractionPlayer {
    * @param strategy The method for emitting and recognizing input
    */
   public InteractionPlayer(final Interaction interaction, final PlayStrategy strategy) {
+    if(interaction == null) throw new NullPointerException("interaction can't be null.");
+    if(strategy == null) throw new NullPointerException("strategy can't be null.");
     this._interaction = interaction;
     this._strategy = strategy;
     this._scriptInterpreter.addBinding(new Debug(), "debug");
